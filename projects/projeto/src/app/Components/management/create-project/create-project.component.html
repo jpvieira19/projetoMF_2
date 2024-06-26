@@ -1,0 +1,24 @@
+<mat-dialog-content class="mat-typography">
+  <h2>Create Project</h2>
+  <form #deliveryForm="ngForm" (ngSubmit)="createProject()" #form="ngForm">
+      <mat-form-field appearance="fill">
+          <mat-label>Project Name</mat-label>
+          <input matInput type="text" id="Name" name="Name" required [(ngModel)]="projeto.name" placeholder="ex: Projeto A">
+      </mat-form-field>
+      <br />
+      <mat-form-field appearance="fill">
+          <mat-label>Start Date</mat-label>
+          <input matInput type="date" id="startDate" name="startDate" required [(ngModel)]="projeto.startDate">
+      </mat-form-field>
+      <br />
+      <mat-form-field appearance="fill">
+          <mat-label>End Date</mat-label>
+          <input matInput type="date" id="endDate" name="endDate" required [(ngModel)]="projeto.endDate">
+      </mat-form-field>
+      <br />
+      <mat-dialog-actions>
+          <button mat-button mat-dialog-close>Cancel</button>
+          <button mat-button type="submit" cdkFocusInitial [disabled]="deliveryForm.invalid">Submit</button>
+      </mat-dialog-actions>
+  </form>
+</mat-dialog-content>

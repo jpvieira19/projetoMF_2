@@ -1,5 +1,5 @@
 {
-  "name": "projeto-mf",
+  "name": "projectmicrofrontend",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -24,12 +24,8 @@
     "@angular/platform-browser": "^17.3.0",
     "@angular/platform-browser-dynamic": "^17.3.0",
     "@angular/router": "^17.3.0",
-    "angular": "^1.8.3",
-    "bootstrap": "^5.3.3",
-    "datatables.net-bs4": "^2.0.7",
     "es-module-shims": "^1.5.12",
-    "jquery": "^3.3.1",
-    "popper.js": "^1.14.3",
+    "ng-angular-popup": "^0.5.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.6.2",
     "zone.js": "~0.14.3"
@@ -46,7 +42,6 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "ng-packagr": "^17.3.0",
     "typescript": "^5.4.5",
     "cypress": "latest"
   }

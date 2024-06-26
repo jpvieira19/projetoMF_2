@@ -1,38 +1,60 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, ViewChild, OnChanges, Input, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IAssociation } from '../../../Interfaces/IAssociation';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSelectModule } from '@angular/material/select';
 import { Projeto } from '../../../Interfaces/IProjeto';
 import { AssociationService } from '../../../Services/association.service';
 import { ColaboratorService } from '../../../Services/colaborator.service';
+import { IAssociation } from '../../../Interfaces/IAssociation';
 import { IColaborator } from '../../../Interfaces/IColaborator';
+import { CreateAssociationComponent } from '../create-association/create-association.component';
 
 @Component({
   selector: 'app-project-details',
   templateUrl: './project-details.component.html',
-  styleUrls: ['./project-details.component.scss'],
+  styleUrls: ['./project-details.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule]
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatTableModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatSelectModule,
+    MatIconModule,
+    MatTooltipModule,
+    CreateAssociationComponent
+  ]
 })
 export class ProjectDetailsComponent implements OnInit, OnChanges {
   @Input() selectedProject: Projeto | null = null;
-  associations: IAssociation[] = [];
-  filteredAssociations: IAssociation[] = [];
+  associations = new MatTableDataSource<IAssociation>();
   colaboradoresAssocLista: IColaborator[] = [];
   assocFilterOption: string = 'all';
-  currentAssocPage = 1;
-  assocPageSize = 5;
-  totalAssocPages = 0;
-  sortAssocColumn: keyof IAssociation = 'colaboratorId';
-  sortAssocDirection: 'asc' | 'desc' = 'asc';
   message: string = '';
   isAddingAssociation = false;
-  newAssociation: IAssociation = { id: 0, projectId: 0, colaboratorId: 0, startDate: '', endDate: '' };
+
+  displayedColumns: string[] = ['colaboratorId', 'startDate', 'endDate'];
+  @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(private associationService: AssociationService, private colaboradoresService: ColaboratorService) {}
 
   ngOnInit(): void {
     this.loadColaboradores();
+    this.associations.sort = this.sort;
+    this.associations.paginator = this.paginator;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -57,7 +79,7 @@ export class ProjectDetailsComponent implements OnInit, OnChanges {
     if (this.selectedProject) {
       this.associationService.getAssociationsByProjetoId(this.selectedProject.id).subscribe({
         next: (associations) => {
-          this.associations = associations;
+          this.associations.data = associations;
           this.applyAssocFilterOption(); // Aplicar o filtro ao carregar as associações
         },
         error: () => {
@@ -68,9 +90,6 @@ export class ProjectDetailsComponent implements OnInit, OnChanges {
   }
 
   openAddAssociation() {
-    if (this.selectedProject) {
-      this.newAssociation.projectId = this.selectedProject.id;
-    }
     this.isAddingAssociation = true;
   }
 
@@ -78,26 +97,13 @@ export class ProjectDetailsComponent implements OnInit, OnChanges {
     this.isAddingAssociation = false;
   }
 
-  addAssociationToProject() {
-    if (this.selectedProject) {
-      this.associationService.addAssociation(this.newAssociation).subscribe({
-        next: (newAssociation) => {
-          this.associations.push(newAssociation);
-          this.applyAssocFilterOption(); // Reaplicar o filtro ao adicionar nova associação
-          this.totalAssocPages = Math.ceil(this.filteredAssociations.length / this.assocPageSize);
-          this.isAddingAssociation = false;
-        },
-        error: () => {
-          this.message = 'Failed to add association';
-        }
-      });
-    }
+  applyAssocFilter(filterValue: string) {
+    this.associations.filter = filterValue.trim().toLowerCase();
   }
 
-  applyAssocFilter(filterValue: string) {
-    const lowerFilterValue = filterValue.trim().toLowerCase();
-    const filteredWithinPeriod = this.associations.filter(association => {
-      const now = new Date();
+  applyAssocFilterOption() {
+    const now = new Date();
+    this.associations.data = this.associations.data.filter(association => {
       switch (this.assocFilterOption) {
         case 'all':
           return true;
@@ -110,86 +116,6 @@ export class ProjectDetailsComponent implements OnInit, OnChanges {
         default:
           return true;
       }
-    });
-
-    this.filteredAssociations = filteredWithinPeriod.filter(association =>
-      association.colaboratorId.toString().includes(lowerFilterValue) ||
-      this.formatDate(new Date(association.startDate)).includes(lowerFilterValue) ||
-      this.formatDate(new Date(association.endDate)).includes(lowerFilterValue)
-    );
-
-    this.totalAssocPages = Math.ceil(this.filteredAssociations.length / this.assocPageSize);
-    this.currentAssocPage = 1;
-  }
-
-  applyAssocFilterOption() {
-    const now = new Date();
-    switch (this.assocFilterOption) {
-      case 'all':
-        this.filteredAssociations = this.associations;
-        break;
-      case 'current':
-        this.filteredAssociations = this.associations.filter(association =>
-          new Date(association.startDate) <= now && new Date(association.endDate) >= now
-        );
-        break;
-      case 'past':
-        this.filteredAssociations = this.associations.filter(association =>
-          new Date(association.endDate) < now
-        );
-        break;
-      case 'future':
-        this.filteredAssociations = this.associations.filter(association =>
-          new Date(association.startDate) > now
-        );
-        break;
-    }
-    this.applyAssocFilter(''); // Aplicar o filtro de texto após filtrar por período
-    this.totalAssocPages = Math.ceil(this.filteredAssociations.length / this.assocPageSize);
-    this.currentAssocPage = 1;
-  }
-
-  paginatedAssocData(): IAssociation[] {
-    const startIndex = (this.currentAssocPage - 1) * this.assocPageSize;
-    return this.filteredAssociations.slice(startIndex, startIndex + this.assocPageSize);
-  }
-
-  previousAssocPage() {
-    if (this.currentAssocPage > 1) {
-      this.currentAssocPage--;
-    }
-  }
-
-  nextAssocPage() {
-    if (this.currentAssocPage < this.totalAssocPages) {
-      this.currentAssocPage++;
-    }
-  }
-
-  formatDate(date: Date): string {
-    const d = new Date(date);
-    const month = ('0' + (d.getMonth() + 1)).slice(-2);
-    const day = ('0' + d.getDate()).slice(-2);
-    const year = d.getFullYear();
-    return [day, month, year].join('/');
-  }
-
-  sortAssocData(column: keyof IAssociation) {
-    if (this.sortAssocColumn === column) {
-      this.sortAssocDirection = this.sortAssocDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortAssocColumn = column;
-      this.sortAssocDirection = 'asc';
-    }
-
-    this.filteredAssociations.sort((a, b) => {
-      let comparison = 0;
-      if (a[column] > b[column]) {
-        comparison = 1;
-      } else if (a[column] < b[column]) {
-        comparison = -1;
-      }
-      return this.sortAssocDirection === 'asc' ? comparison : -comparison;
     });
   }
 }

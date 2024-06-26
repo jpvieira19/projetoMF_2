@@ -10,7 +10,7 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    //"sourceMap": true,
+    "sourceMap": false,
     "declaration": false,
     "experimentalDecorators": true,
     "moduleResolution": "node",
@@ -28,5 +28,10 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  }
+  },
+
+  "exclude": [
+    "cypress/**/*.ts",
+    "cypress.config.ts"
+  ]
 }

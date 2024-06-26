@@ -1,14 +1,14 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { CreateAndGetProjectComponent } from '../src/app/Components/management/create-and-get-project/create-and-get-project.component';
+import { GetProjectComponent } from '../src/app/Components/management/get-project/get-project.component';
 
 
 
 export const routes: Routes = [
   {
     path: '',
-    component: CreateAndGetProjectComponent
+    component: GetProjectComponent
   }
   
 
@@ -19,7 +19,7 @@ export const routes: Routes = [
   imports: [
     
     CommonModule,
-    CreateAndGetProjectComponent,
+    GetProjectComponent,
     RouterModule.forChild(routes),
     
   ]

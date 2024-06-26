@@ -1,0 +1,51 @@
+<div class="container">
+  <div class="listColaborators">
+    <div class="containerFiltersButton">
+      <div class="filters-container">
+        <div class="filter-container">
+          <mat-form-field appearance="fill">
+            <input matInput placeholder="Search all columns" (input)="applyFilter($event)">
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="button-container">
+        <button mat-raised-button color="primary" (click)="openCreateProject()">Create Project</button>
+      </div>
+    </div>
+    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 custom-table" matSort>
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
+        <td mat-cell *matCellDef="let element">{{ element.id }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+        <td mat-cell *matCellDef="let element">{{ element.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="startDate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Start Date</th>
+        <td mat-cell *matCellDef="let element">{{ element.startDate | date: 'shortDate' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="endDate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>End Date</th>
+        <td mat-cell *matCellDef="let element">{{ element.endDate | date: 'shortDate' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let element">
+          <button mat-icon-button color="primary" (click)="showProjectDetails(element)" matTooltip="Details">
+            <mat-icon>assignment</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let element; columns: displayedColumns;"></tr>
+    </table>
+    <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page" [length]="dataSource.data.length"></mat-paginator>
+  </div>
+  <app-project-details *ngIf="selectedProject" [selectedProject]="selectedProject"></app-project-details>
+</div>

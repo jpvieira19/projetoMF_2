@@ -1,76 +1,55 @@
-<div *ngIf="selectedProject" class="project-details mt-5">
-  <h3>Project Details</h3>
-  <p><strong>Name:</strong> {{ selectedProject.name }}</p>
-  <p><strong>Start Date:</strong> {{ selectedProject.startDate | date: 'shortDate' }}</p>
-  <p><strong>End Date:</strong> {{ selectedProject.endDate | date: 'shortDate' }}</p>
+<div *ngIf="selectedProject">
+  <h3>Name: {{ selectedProject.name }}</h3>
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mt-4">Colaborators Associated to {{ selectedProject.name }}</h4>
-    <div class="d-flex">
-      <select class="form-select me-3" [(ngModel)]="assocFilterOption" (change)="applyAssocFilterOption()">
-        <option value="all">Colaboradores no Projeto em qualquer altura</option>
-        <option value="current">Colaboradores Atualmente no Projeto</option>
-        <option value="past">Colaboradores que já estiveram no Projeto</option>
-        <option value="future">Colaboradores futuros no projeto</option>
-      </select>
-      <button class="btn btn-primary btn-lg" (click)="openAddAssociation()">Add Colaborator</button>
+  <div class="listAssociations">
+    <div class="containerFiltersButton d-flex justify-content-between align-items-center mb-3">
+      <div class="filters-container d-flex flex-grow-1">
+        <div class="filter-container me-3 flex-grow-1">
+          <mat-form-field appearance="fill" class="w-100">
+            <mat-label>Filter Option</mat-label>
+            <mat-select [(value)]="assocFilterOption" (selectionChange)="applyAssocFilterOption()">
+              <mat-option value="all">Colaboradores no Projeto em qualquer altura</mat-option>
+              <mat-option value="current">Colaboradores Atualmente no Projeto</mat-option>
+              <mat-option value="past">Colaboradores que já estiveram no Projeto</mat-option>
+              <mat-option value="future">Colaboradores futuros no projeto</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="filter-container flex-grow-1">
+          <mat-form-field appearance="fill" class="w-100">
+            <mat-label>Filter Colaborators</mat-label>
+            <input matInput (keyup)="applyAssocFilter($any($event.target).value)" placeholder="Ex. John Doe">
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="button-container">
+        <button mat-raised-button color="primary" (click)="openAddAssociation()">Add Colaborator</button>
+      </div>
     </div>
   </div>
-  <input type="text" class="form-control mb-3" placeholder="Filter Colaborators" (keyup)="applyAssocFilter($any($event.target).value)">
+
   <div class="table-responsive">
-    <table class="table table-striped table-bordered table-hover">
-      <thead class="table-light">
-        <tr>
-          <th (click)="sortAssocData('colaboratorId')" style="cursor: pointer">Colaborator ID</th>
-          <th (click)="sortAssocData('startDate')" style="cursor: pointer">Data Inicio</th>
-          <th (click)="sortAssocData('endDate')" style="cursor: pointer">Data Fim</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngIf="filteredAssociations.length === 0">
-          <td colspan="3">No colaborators found</td>
-        </tr>
-        <tr *ngFor="let association of paginatedAssocData(); let i = index">
-          <td>{{ association.colaboratorId }}</td>
-          <td>{{ association.startDate | date: 'shortDate' }}</td>
-          <td>{{ association.endDate | date: 'shortDate' }}</td>
-        </tr>
-      </tbody>
+    <table mat-table [dataSource]="associations" matSort class="mat-elevation-z8">
+      <ng-container matColumnDef="colaboratorId">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Colaborator ID</th>
+        <td mat-cell *matCellDef="let association">{{ association.colaboratorId }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="startDate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Data Inicio</th>
+        <td mat-cell *matCellDef="let association">{{ association.startDate | date: 'shortDate' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="endDate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Data Fim</th>
+        <td mat-cell *matCellDef="let association">{{ association.endDate | date: 'shortDate' }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
-    <div class="d-flex justify-content-between align-items-center mt-3">
-      <button class="btn btn-secondary" (click)="previousAssocPage()" [disabled]="currentAssocPage === 1">Previous</button>
-      <span>Page {{ currentAssocPage }} of {{ totalAssocPages }}</span>
-      <button class="btn btn-secondary" (click)="nextAssocPage()" [disabled]="currentAssocPage === totalAssocPages">Next</button>
-    </div>
+    <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page"></mat-paginator>
   </div>
 
-  <div *ngIf="isAddingAssociation" class="modal">
-    <div class="modal-content">
-      <span class="close" (click)="closeAddAssociation()">&times;</span>
-      <h2>Add Colaborator</h2>
-      <form #addAssociationForm="ngForm" (ngSubmit)="addAssociationToProject()">
-        <div class="mb-3">
-          <label for="projectId" class="form-label">Project</label>
-          <input type="text" class="form-control" id="projectId" name="projectId" [value]="selectedProject.name" disabled>
-        </div>
-        <div class="mb-3">
-          <label for="colaboratorId" class="form-label">Colaborator</label>
-          <select id="colaboratorId" name="colaboratorId" class="form-control" required [(ngModel)]="newAssociation.colaboratorId">
-            <option *ngFor="let colaborator of colaboradoresAssocLista" [value]="colaborator.id">
-              {{ colaborator.id }} - {{ colaborator.name }}
-            </option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label for="DataInicio" class="form-label">Data Inicio</label>
-          <input type="date" class="form-control" id="DataInicio" name="DataInicio" required [(ngModel)]="newAssociation.startDate">
-        </div>
-        <div class="mb-3">
-          <label for="DataFim" class="form-label">Data Fim</label>
-          <input type="date" class="form-control" id="DataFim" name="DataFim" required [(ngModel)]="newAssociation.endDate">
-        </div>
-        <button type="submit" class="btn btn-primary" [disabled]="addAssociationForm.invalid">Add</button>
-      </form>
-    </div>
-  </div>
+  <app-create-association *ngIf="isAddingAssociation" (close)="closeAddAssociation()" [selectedProject]="selectedProject" [colaboradoresAssocLista]="colaboradoresAssocLista"></app-create-association>
 </div>
