@@ -16,6 +16,9 @@ import { ColaboratorService } from '../../../Services/colaborator.service';
 import { IAssociation } from '../../../Interfaces/IAssociation';
 import { IColaborator } from '../../../Interfaces/IColaborator';
 import { CreateAssociationComponent } from '../create-association/create-association.component';
+import { CreateProjectComponent } from '../create-project/create-project.component';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+
 
 @Component({
   selector: 'app-project-details',
@@ -34,7 +37,8 @@ import { CreateAssociationComponent } from '../create-association/create-associa
     MatSelectModule,
     MatIconModule,
     MatTooltipModule,
-    CreateAssociationComponent
+    CreateAssociationComponent,
+    MatDialogModule
   ]
 })
 export class ProjectDetailsComponent implements OnInit, OnChanges {
@@ -44,17 +48,22 @@ export class ProjectDetailsComponent implements OnInit, OnChanges {
   assocFilterOption: string = 'all';
   message: string = '';
   isAddingAssociation = false;
+  dataSource = new MatTableDataSource<Projeto>();
+  totalLength = 0;
+
 
   displayedColumns: string[] = ['colaboratorId', 'startDate', 'endDate'];
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  
 
-  constructor(private associationService: AssociationService, private colaboradoresService: ColaboratorService) {}
+  constructor(private associationService: AssociationService, private colaboradoresService: ColaboratorService,public dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.loadColaboradores();
     this.associations.sort = this.sort;
     this.associations.paginator = this.paginator;
+    
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -90,12 +99,22 @@ export class ProjectDetailsComponent implements OnInit, OnChanges {
   }
 
   openAddAssociation() {
-    this.isAddingAssociation = true;
+    const dialogRef = this.dialog.open(CreateAssociationComponent, {
+      data: {
+        selectedProject: this.selectedProject,
+        colaboradoresAssocLista: this.colaboradoresAssocLista
+      }
+    });
+  
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.dataSource.data = [...this.dataSource.data, result];
+        this.totalLength = this.dataSource.data.length;
+        this.loadAssociations(); // Reload associations to include the new one
+      }
+    });
   }
-
-  closeAddAssociation() {
-    this.isAddingAssociation = false;
-  }
+  
 
   applyAssocFilter(filterValue: string) {
     this.associations.filter = filterValue.trim().toLowerCase();

@@ -51,5 +51,5 @@
     <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page"></mat-paginator>
   </div>
 
-  <app-create-association *ngIf="isAddingAssociation" (close)="closeAddAssociation()" [selectedProject]="selectedProject" [colaboradoresAssocLista]="colaboradoresAssocLista"></app-create-association>
+  <app-create-association *ngIf="isAddingAssociation" [selectedProject]="selectedProject" [colaboradoresAssocLista]="colaboradoresAssocLista"></app-create-association>
 </div>

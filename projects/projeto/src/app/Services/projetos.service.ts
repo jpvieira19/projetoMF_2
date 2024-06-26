@@ -43,12 +43,8 @@ export class ProjetosService {
   }
 
   createProject(project: Projeto): Observable<Projeto> {
-    return this.http.post<Projeto>(this.urlC + this.projetosURL, project, this.httpOptions).pipe(tap(newProject => {
-      // Atualiza o BehaviorSubject adicionando o novo projeto ao array existente
-      const updatedProjects = [...this.projectsSubject.value, newProject];
-      this.projectsSubject.next(updatedProjects);
-    }),
-      catchError(this.handleError));
+    return this.http.post<Projeto>(this.urlC + this.projetosURL, project, this.httpOptions)
+    .pipe(catchError(this.handleError));
   }
 
   handleError(error: HttpErrorResponse) {
@@ -56,8 +52,4 @@ export class ProjetosService {
       return error;
     });
   }
-
-
-
-
 }
