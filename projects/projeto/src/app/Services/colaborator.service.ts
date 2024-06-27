@@ -12,8 +12,8 @@ import { IColaborator } from '../Interfaces/IColaborator';
 })
 export class ColaboratorService {
 
-  private urlGet = 'https://localhost:5011';
-  private urlPost = 'https://localhost:5001';
+  private urlGet = 'http://localhost:5011';
+  private urlPost = 'http://localhost:5001';
   constructor(private httpClient: HttpClient) { }
 
   httpOptions = {

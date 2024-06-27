@@ -12,8 +12,8 @@ import { IAssociation } from '../Interfaces/IAssociation';
 })
 export class AssociationService {
 
-  private urlGet = 'https://localhost:5041';
-  private urlPost = 'https://localhost:5031';
+  private urlGet = 'http://localhost:5041';
+  private urlPost = 'http://localhost:5031';
   constructor(private httpClient: HttpClient) { }
 
   httpOptions = {
